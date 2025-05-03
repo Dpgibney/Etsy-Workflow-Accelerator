@@ -1,5 +1,5 @@
 from PyQt6 import QtWidgets, uic
-from PyQt6.QtWidgets import QFileDialog, QLineEdit
+from PyQt6.QtWidgets import QFileDialog, QLineEdit, QMessageBox
 from PyQt6.QtCore import pyqtSlot, QStringListModel, Qt
 import sys
 from pdf2image import convert_from_path
@@ -33,11 +33,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         #}
         self.loaded_files = {}
 
-    def update_loaded_files(self,name,location,JPG=[],Titles=[]):
+    def update_loaded_files(self,name,location,size,JPG=[],Titles=[]):
         if name in self.loaded_files:
             pass
         else:
-            self.loaded_files.update({name:{'Location':location,'JPG':JPG,'Titles':Titles}})
+            self.loaded_files.update({name:{'Location':location,'Size':size,'JPG':JPG,'Titles':Titles}})
 
         
     @pyqtSlot()
@@ -51,7 +51,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.loaded_files = {}
         for loc in fname[0]:
             name = loc.split('/')[-1]
-            self.update_loaded_files(name,loc)
+            if '(' not in loc and ')' not in loc:
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle('PDF load error')
+                dlg.setText(f"Error: {loc} missing (size) in title")
+                button = dlg.exec()
+                return
+            size = loc.split('(')[1].split(')')[0]
+            self.update_loaded_files(name,loc,size)
         self.update_loaded_files_view()
         print(self.loaded_files)
 
