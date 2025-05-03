@@ -27,6 +27,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Previous.clicked.connect(lambda: self.update_image(-1))
 
         self.ImageTitle.textEdited.connect(lambda: self.update_title(False))
+        self.ImageTitle.returnPressed.connect(lambda: self.update_image(1))
 
         self.Save.clicked.connect(self.save)
 
