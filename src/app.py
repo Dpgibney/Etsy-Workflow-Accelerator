@@ -28,6 +28,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.ImageTitle.textEdited.connect(lambda: self.update_title(False))
 
+        self.Save.clicked.connect(self.save)
+
         #structure is {name: {'Location':'','JPG':[],'Titles':[]}
         # 
         #}
@@ -52,10 +54,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         for loc in fname[0]:
             name = loc.split('/')[-1]
             if '(' not in loc and ')' not in loc:
-                dlg = QMessageBox(self)
-                dlg.setWindowTitle('PDF load error')
-                dlg.setText(f"Error: {loc} missing (size) in title")
-                button = dlg.exec()
+                self.DisplayError('PDF load error',f'Error: {loc} missing (size) in title')
                 return
             size = loc.split('(')[1].split(')')[0]
             self.update_loaded_files(name,loc,size)
@@ -74,15 +73,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.loaded_files = {}
 
     def convert_to_jpg(self):
-        tmp = None
+        pages = 0
         for name in self.loaded_files:
             if len(self.loaded_files[name]['JPG']) == 0:
                 loc = self.loaded_files[name]['Location']
                 self.loaded_files[name]['JPG'] = convert_from_path(loc,dpi=300)
-                tmp = convert_from_path(loc,dpi=300)[0]
-                print(tmp)
+                pages = len(self.loaded_files[name]['JPG'])
                 for _ in range(len(self.loaded_files[name]['JPG'])):
                     self.loaded_files[name]['Titles'].append('')
+
+        #Check that all PDFs had the same number of pages
+        for name in self.loaded_files:
+            if len(self.loaded_files[name]['JPG']) != pages:
+                self.DisplayError('PDF Format Error','One of the PDFs loaded had a different number of pages. Try again')
+                self.clear_loaded_files()
+                self.loaded_files = {}
+                return
+
         self.update_image()
 
     def update_image(self,move=0):
@@ -119,7 +126,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         imagetmp = ImageQt.ImageQt(tmp)
         pixmap = QPixmap.fromImage(imagetmp)
-        self.Image.setPixmap(pixmap.scaled(self.Image.width(),self.Image.height()))
+        self.Image.setPixmap(pixmap.scaled(self.Image.width(),self.Image.height(),Qt.AspectRatioMode.KeepAspectRatio))
         self.Image.setMask(pixmap.mask());
         self.Image.show();
 
@@ -141,7 +148,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         title = self.ImageTitle.text()
         print(title)
 
-        
+    def save(self):
+        #Check that the files all have titles
+        if len(self.loaded_files.keys()) == 0:
+            self.DisplayError('Save Error','Error: No files loaded')
+            return
+
+        first_key = list(self.loaded_files.keys())[0]
+        if len(self.loaded_files[first_key]['JPG']) == 0:
+            self.DisplayError('Save Error','Error: No files converted')
+
+        raise NotImplimentedError()
+
+    def DisplayError(self,title,message):
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle(title)
+        dlg.setText(message)
+        button = dlg.exec()
+
 
         
 
