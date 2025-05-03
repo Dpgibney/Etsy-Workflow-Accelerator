@@ -39,7 +39,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if name in self.loaded_files:
             pass
         else:
-            self.loaded_files.update({name:{'Location':location,'Size':size,'JPG':JPG,'Titles':Titles}})
+            self.loaded_files.update({name:{'Location':location,'Size':size,'JPG':JPG.copy(),'Titles':Titles.copy()}})
 
         
     @pyqtSlot()
@@ -73,19 +73,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.loaded_files = {}
 
     def convert_to_jpg(self):
+        if len(self.loaded_files.keys()) == 0:
+            self.DisplayError('Convert Error','No PDFs loaded')
+            return
         pages = 0
         for name in self.loaded_files:
             if len(self.loaded_files[name]['JPG']) == 0:
                 loc = self.loaded_files[name]['Location']
                 self.loaded_files[name]['JPG'] = convert_from_path(loc,dpi=300)
                 pages = len(self.loaded_files[name]['JPG'])
-                for _ in range(len(self.loaded_files[name]['JPG'])):
+                print("Pages:",pages)
+                for _ in range(pages):
                     self.loaded_files[name]['Titles'].append('')
 
         #Check that all PDFs had the same number of pages
         for name in self.loaded_files:
             if len(self.loaded_files[name]['JPG']) != pages:
-                self.DisplayError('PDF Format Error','One of the PDFs loaded had a different number of pages. Try again')
+                self.DisplayError('Convert Error','One of the PDFs loaded had a different number of pages. Try again')
                 self.clear_loaded_files()
                 self.loaded_files = {}
                 return
@@ -149,6 +153,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         print(title)
 
     def save(self):
+        for name in self.loaded_files:
+            print(self.loaded_files[name])
         #Check that the files all have titles
         if len(self.loaded_files.keys()) == 0:
             self.DisplayError('Save Error','Error: No files loaded')
@@ -157,8 +163,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         first_key = list(self.loaded_files.keys())[0]
         if len(self.loaded_files[first_key]['JPG']) == 0:
             self.DisplayError('Save Error','Error: No files converted')
+            return
 
-        raise NotImplimentedError()
+        #Check that each JPG has a title
+        for indx, title in enumerate(self.loaded_files[first_key]['Titles']):
+            if title == '':
+                self.DisplayError('Save Error',f'Error: Image {indx+1} is missing a title')
+                return
+        Titles = self.loaded_files[first_key]['Titles'].copy()
+        for name in self.loaded_files:
+            for indx in range(len(self.loaded_files[name]['Titles'])):
+                self.loaded_files[name]['Titles'][indx] = Titles[indx]+'_'+self.loaded_files[name]['Size']
+                print(self.loaded_files[name]['Titles'])
+
+
+
+        raise NotImplimentedError
 
     def DisplayError(self,title,message):
         dlg = QMessageBox(self)
