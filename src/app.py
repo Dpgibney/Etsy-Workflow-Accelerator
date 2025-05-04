@@ -9,6 +9,10 @@ import os
 
 from MainWindow import Ui_MainWindow
 
+#So poppler is found on MacOS install
+os.environ["PATH"]+=os.pathsep+os.path.join('_internal/poppler','bin')
+
+
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
         super().__init__(*args, **kwargs)
