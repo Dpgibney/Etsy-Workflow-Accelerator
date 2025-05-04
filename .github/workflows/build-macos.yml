@@ -32,7 +32,7 @@ jobs:
           brew install poppler
 
       - name: Build with PyInstaller
-        run: pyinstaller --onedir --icon='src/icon.icns' --windowed --add-data pdfinfo.*:. --icon=NONE src/app.py
+        run: pyinstaller --onedir --icon='src/icon.icns' --windowed --add-data "/usr/local/Cellar/pdfinfo*:. --icon=NONE src/app.py
 
       - name: Archive build
         run: |
