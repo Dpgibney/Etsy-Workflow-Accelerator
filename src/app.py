@@ -66,6 +66,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.DisplayError('PDF load error',f'Error: {loc} missing (size) in title')
                 return
             size = loc.split('(')[1].split(')')[0].replace(' ','')
+            #Remove 'in'
+            size = size.replace('i','').replace('n','')
             if '16x20' in size:
                 size = '16x20_8x10_4x5'
             self.update_loaded_files(name,loc,size)
@@ -158,6 +160,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if len(self.loaded_files.keys()) == 0:          
             return
         first_key = list(self.loaded_files.keys())[0]
+        if len(self.loaded_files[first_key]['JPG']) == 0:
+            self.DisplayError('Title Error','Error: No files converted')
+            return
         cur_img = self.loaded_files['cur_img']
         print(img_changed)
 
@@ -202,6 +207,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         for indx, dir_title in enumerate(Titles):
             save_loc = save_path + os.sep + dir_title
             os.makedirs(save_loc, exist_ok=True)
+            os.makedirs(save_loc+ os.sep + 'Listing Photos', exist_ok=True)
             for name in self.loaded_files:
                 if 'cur_img' not in name:
                     file_title = self.loaded_files[name]['Titles'][indx]
