@@ -1,0 +1,47 @@
+name: Build macOS App
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on:  macos-13
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: '3.12.3'  # Use the Python version you need
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install pillow
+          pip install pdf2image
+          pip install PyQt6
+          pip install tomlkit
+          brew install poppler
+
+      - name: Build with PyInstaller
+        run: pyinstaller --onedir --icon='src/icon.icns' --windowed --add-data "/usr/local/Cellar/poppler/*:./poppler" --noupx --icon=NONE src/app.py
+
+      - name: Archive build
+        run: |
+          mkdir -p dist-macos
+          mv dist/app dist-macos/
+          tar -czvf dist-macos.tar.gz dist-macos
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: macOS-build
+          path: dist-macos.tar.gz
