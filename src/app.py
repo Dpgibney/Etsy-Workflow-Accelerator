@@ -1,17 +1,20 @@
-from PyQt6 import QtWidgets, uic
-from PyQt6.QtWidgets import QFileDialog, QLineEdit, QMessageBox
+from PyQt6 import QtWidgets
+from PyQt6.QtWidgets import QFileDialog, QMessageBox
 from PyQt6.QtCore import pyqtSlot, QStringListModel, Qt
 import sys
-from pdf2image import convert_from_path
-from PIL import ImageQt
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QImage
 import os
+import pymupdf
 
 from MainWindow import Ui_MainWindow
 
-#So poppler is found on MacOS install
-os.environ["PATH"]+=os.pathsep+os.path.join('_internal/poppler','bin')
-
+def convert_pixmap_to_qpixmap(pix):
+    """Converts a PyMuPDF Pixmap to a PyQt QPixmap."""
+    if pix.alpha:
+        image = QImage(pix.samples, pix.width, pix.height, pix.stride, QImage.Format.Format_RGBA8888)
+    else:
+        image = QImage(pix.samples, pix.width, pix.height, pix.stride, QImage.Format.Format_RGB888)
+    return QPixmap.fromImage(image)
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
@@ -88,9 +91,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         for name in self.loaded_files:
             if len(self.loaded_files[name]['JPG']) == 0:
                 loc = self.loaded_files[name]['Location']
-                cwd = os.getcwd()
-                print(cwd)
-                self.loaded_files[name]['JPG'] = convert_from_path(loc,dpi=300,poppler_path=f'{cwd}/_internal/poppler/bin')
+                for page in pymupdf.open(loc):
+                    self.loaded_files[name]['JPG'].append(page.get_pixmap(dpi=300))
                 pages = len(self.loaded_files[name]['JPG'])
                 print("Pages:",pages)
                 for _ in range(pages):
@@ -141,8 +143,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         tmp = self.loaded_files[first_key]['JPG'][new_indx]
         self.loaded_files['cur_img'] = new_indx
 
-        imagetmp = ImageQt.ImageQt(tmp)
-        pixmap = QPixmap.fromImage(imagetmp)
+        #imagetmp = ImageQt.ImageQt(tmp)
+        #pixmap = QPixmap.fromImage(tmp)
+        pixmap = convert_pixmap_to_qpixmap(tmp)
         self.Image.setPixmap(pixmap.scaled(self.Image.width(),self.Image.height(),Qt.AspectRatioMode.KeepAspectRatio))
         self.Image.setMask(pixmap.mask());
         self.Image.show();
