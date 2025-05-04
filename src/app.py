@@ -5,6 +5,7 @@ import sys
 from pdf2image import convert_from_path
 from PIL import ImageQt
 from PyQt6.QtGui import QPixmap
+import os
 
 from MainWindow import Ui_MainWindow
 
@@ -53,11 +54,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         self.loaded_files = {}
         for loc in fname[0]:
-            name = loc.split('/')[-1]
+            name = loc.split(os.sep)[-1]
             if '(' not in loc and ')' not in loc:
                 self.DisplayError('PDF load error',f'Error: {loc} missing (size) in title')
                 return
-            size = loc.split('(')[1].split(')')[0]
+            size = loc.split('(')[1].split(')')[0].replace(' ','')
+            if '16x20' in size:
+                size = '16x20_8x10_4x5'
             self.update_loaded_files(name,loc,size)
         self.update_loaded_files_view()
         print(self.loaded_files)
@@ -105,6 +108,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         #Move = 0 denotes set to the first image (only use the first size for previewing images)
         first_key = list(self.loaded_files.keys())[0]
         num_images = len(self.loaded_files[first_key]['JPG'])
+
+        if num_images == 0:
+            return
 
         #Ensure that the current image is in the dict
         if 'cur_img' in self.loaded_files:
@@ -173,13 +179,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 return
         Titles = self.loaded_files[first_key]['Titles'].copy()
         for name in self.loaded_files:
-            for indx in range(len(self.loaded_files[name]['Titles'])):
-                self.loaded_files[name]['Titles'][indx] = Titles[indx]+'_'+self.loaded_files[name]['Size']
-                print(self.loaded_files[name]['Titles'])
+            if 'cur_img' not in name:
+                for indx in range(len(self.loaded_files[name]['Titles'])):
+                    self.loaded_files[name]['Titles'][indx] = Titles[indx]+'_'+self.loaded_files[name]['Size']
+                    print(self.loaded_files[name]['Titles'])
 
+        save_path = QFileDialog.getExistingDirectory(
+                parent=self,
+                caption='Select directory',
+                directory='${HOME}'
+                )
 
-
-        raise NotImplimentedError
+        for indx, dir_title in enumerate(Titles):
+            save_loc = save_path + os.sep + dir_title
+            os.makedirs(save_loc, exist_ok=True)
+            for name in self.loaded_files:
+                if 'cur_img' not in name:
+                    file_title = self.loaded_files[name]['Titles'][indx]
+                    self.loaded_files[name]['JPG'][indx].save(f'{save_loc}{os.sep}{file_title}.jpg','JPEG')
+                
 
     def DisplayError(self,title,message):
         dlg = QMessageBox(self)
