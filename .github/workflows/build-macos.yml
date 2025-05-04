@@ -31,7 +31,7 @@ jobs:
           pip install tomlkit
 
       - name: Build with PyInstaller
-        run: pyinstaller --onedir --windowed --icon=NONE src/app.py
+        run: pyinstaller --onedir --icon='src/icon.icns' --windowed --icon=NONE src/app.py
 
       - name: Archive build
         run: |
