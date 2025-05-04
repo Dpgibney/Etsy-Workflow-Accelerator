@@ -29,6 +29,7 @@ jobs:
           pip install pdf2image
           pip install PyQt6
           pip install tomlkit
+          brew install poppler
 
       - name: Build with PyInstaller
         run: pyinstaller --onedir --icon='src/icon.icns' --windowed --icon=NONE src/app.py
