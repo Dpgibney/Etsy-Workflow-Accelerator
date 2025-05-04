@@ -26,13 +26,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install pillow
-          pip install pdf2image
           pip install PyQt6
           pip install tomlkit
-          brew install poppler
-
+          pip install pymupdf
+          
       - name: Build with PyInstaller
-        run: pyinstaller --onedir --icon='src/icon.icns' --windowed --add-data "/usr/local/Cellar/poppler/*:./poppler" --noupx --icon=NONE src/app.py
+        run: pyinstaller --onedir --icon='src/icon.icns' --windowed --icon=NONE src/app.py
 
       - name: Archive build
         run: |
