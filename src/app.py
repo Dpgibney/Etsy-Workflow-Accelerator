@@ -88,7 +88,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         for name in self.loaded_files:
             if len(self.loaded_files[name]['JPG']) == 0:
                 loc = self.loaded_files[name]['Location']
-                self.loaded_files[name]['JPG'] = convert_from_path(loc,dpi=300)
+                self.loaded_files[name]['JPG'] = convert_from_path(loc,dpi=300,poppler_path=f'./_internal/poppler/bin')
                 pages = len(self.loaded_files[name]['JPG'])
                 print("Pages:",pages)
                 for _ in range(pages):
