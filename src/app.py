@@ -1,7 +1,6 @@
-from PyQt6 import QtWidgets
-from PyQt6.QtWidgets import QFileDialog, QMessageBox
+from PyQt6.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QApplication
 from PyQt6.QtCore import pyqtSlot, QStringListModel, Qt
-import sys
+from sys import argv
 from PyQt6.QtGui import QPixmap, QImage
 import os
 import pymupdf
@@ -16,7 +15,7 @@ def convert_pixmap_to_qpixmap(pix):
         image = QImage(pix.samples, pix.width, pix.height, pix.stride, QImage.Format.Format_RGB888)
     return QPixmap.fromImage(image)
 
-class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
+class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
@@ -224,7 +223,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
 
 
-app = QtWidgets.QApplication(sys.argv)
+app = QApplication(argv)
 
 window = MainWindow()
 window.show()
