@@ -31,12 +31,12 @@ jobs:
           pip install pymupdf
           
       - name: Build with PyInstaller
-        run: pyinstaller --onefile --icon='src/icon.icns' --windowed --icon=NONE src/app.py
+        run: pyinstaller --onefile --icon='src/icon.icns' -n Etsy_Accelerator --windowed src/app.py
 
       - name: Archive build
         run: |
           mkdir -p dist-macos
-          mv dist/app dist-macos/
+          mv dist/*.app dist-macos/
           tar -czvf dist-macos.tar.gz dist-macos
 
       - name: Upload artifact
