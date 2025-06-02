@@ -38,6 +38,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 
         #}
         self.loaded_files = {}
+        self.Open_dir = "${HOME}"
 
     def update_loaded_files(self,name,location,size,JPG=[],Titles=[]):
         #Skip loading files that already exist
@@ -51,7 +52,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         fname = QFileDialog.getOpenFileNames(
             self,
             "Open File",
-            "${HOME}",
+            self.Open_dir,
             "PDF Files (*.pdf)",
         )
         self.loaded_files = {}
@@ -66,7 +67,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if '16x20' in size:
                 size = '16x20_8x10_4x5'
             self.update_loaded_files(name,loc,size)
+
+            #Update Open_dir
+            self.Open_dir = loc[:len(loc)-len(fname[0])]
+
         self.update_loaded_files_view()
+
+
 
     def update_loaded_files_view(self):
         for name in self.loaded_files:
