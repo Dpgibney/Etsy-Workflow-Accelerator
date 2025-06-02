@@ -1,4 +1,4 @@
-name: Build macOS App
+ame: Build macOS App
 
 on:
   push:
@@ -29,35 +29,15 @@ jobs:
           pip install PyQt6
           pip install tomlkit
           pip install pymupdf
-          brew install create-dmg
           
       - name: Build with PyInstaller
-        run: pyinstaller --icon='src/icon.icns' -n 'Etsy Accelerator' --windowed src/app.py
-
-      - name: Build dmg
-        run: |
-          mkdir -p dist/dmg
-          cp -r "dist/Etsy Accelerator.app" dist/dmg
-          create-dmg \
-            --volname "Etsy Accelerator" \
-            --volicon "src/icon.icns" \
-            --window-pos 200 120 \
-            --window-size 600 300 \
-            --icon-size 100 \
-            --icon "Etsy Accelerator.app" 172 120 \
-            --hide-extension "Etsy Accelerator.app" \
-            --app-drop-link 425 120 \
-            "dist/Etsy Accelerator.dmg" \
-            "dist/dmg/"
-        
+        run: pyinstaller --onefile --icon='src/icon.icns' --windowed --icon=NONE src/app.py
 
       - name: Archive build
         run: |
           mkdir -p dist-macos
-          mv dist/*.app dist-macos/
-          mv dist/*dmg dist-macos/
+          mv dist/app dist-macos/
           tar -czvf dist-macos.tar.gz dist-macos
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4.4.3
         with:
