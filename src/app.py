@@ -56,6 +56,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "PDF Files (*.pdf)",
         )
         self.loaded_files = {}
+        self.clear_loaded_files()
         for loc in fname[0]:
             name = loc.split(os.sep)[-1]
             if '(' not in loc and ')' not in loc:
