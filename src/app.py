@@ -4,6 +4,7 @@ from sys import argv
 from PyQt6.QtGui import QPixmap, QImage
 import os
 import pymupdf
+import shutil
 
 from MainWindow import Ui_MainWindow
 
@@ -61,10 +62,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.loaded_files = {}
         for loc in fname[0]:
             name = loc.split(os.sep)[-1]
+            print("name: ",name)
             if '(' not in loc and ')' not in loc:
                 self.DisplayError('PDF load error',f'Error: {loc} missing (size) in title')
                 return
-            size = loc.split('(')[1].split(')')[0].replace(' ','')
+            size = name.split('(')[1].split(')')[0].replace(' ','')
             #Remove 'in'
             size = size.replace('i','').replace('n','')
             if '16x20' in size:
@@ -112,6 +114,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def update_image(self,move=0):
         #check that loaded_files is not empty
         if len(self.loaded_files.keys()) == 0:          
+            self.Image.setPixmap(QPixmap())
+            self.ImageIndex.setText(f'0/0')
+            self.update_title(img_changed=True)
             return
 
         #Move = 0 denotes set to the first image (only use the first size for previewing images)
@@ -157,6 +162,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def update_title(self,img_changed=False):
         #check that loaded_files is not empty
         if len(self.loaded_files.keys()) == 0:          
+            self.ImageTitle.setText('')
             return
         first_key = list(self.loaded_files.keys())[0]
         if len(self.loaded_files[first_key]['JPG']) == 0:
@@ -211,6 +217,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if 'cur_img' not in name:
                     file_title = self.loaded_files[name]['Titles'][indx]
                     self.loaded_files[name]['JPG'][indx].save(f'{save_loc}{os.sep}{file_title}.jpg','JPEG')
+
+        #If jpgs saved lets move the PDFs as well
+        for name in self.loaded_files:
+            if 'cur_img' not in name:
+                src = self.loaded_files[name]['Location']
+                shutil.move(src,save_path+'/'+name)
+        self.clear_loaded_files()
+        self.update_image()
+
+
                 
 
     def DisplayError(self,title,message):
