@@ -78,11 +78,11 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Etsy-Workflow-Accelerator"))
         self.LoadPDFs.setText(_translate("MainWindow", "Load PDF\'s"))
         self.ClearPDFs.setText(_translate("MainWindow", "Clear PDF\'s"))
         self.ConvertPDFs.setText(_translate("MainWindow", "Convert PDF\'s"))
-        self.Image.setText(_translate("MainWindow", "TextLabel"))
+        self.Image.setText(_translate("MainWindow", ""))
         self.ImageTitle.setPlaceholderText(_translate("MainWindow", "Title. Don't include image sizes"))
         self.Previous.setText(_translate("MainWindow", "Previous"))
         self.Next.setText(_translate("MainWindow", "Next"))
