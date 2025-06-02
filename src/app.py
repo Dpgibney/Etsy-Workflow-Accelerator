@@ -20,24 +20,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
-        self.LoadPDFs.clicked.connect(self.open_dialog)
-
         self.list_model = QStringListModel()
         self.LoadedPDFs.setModel(self.list_model)
 
+        self.LoadPDFs.clicked.connect(self.open_dialog)
         self.ClearPDFs.clicked.connect(self.clear_loaded_files)
-
         self.ConvertPDFs.clicked.connect(self.convert_to_jpg)
-
-        self.ImageIndex.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-
         self.Next.clicked.connect(lambda: self.update_image(1))
         self.Previous.clicked.connect(lambda: self.update_image(-1))
-
         self.ImageTitle.textEdited.connect(lambda: self.update_title(False))
         self.ImageTitle.returnPressed.connect(lambda: self.update_image(1))
-
         self.Save.clicked.connect(self.save)
+
+        self.ImageIndex.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
         #structure is {name: {'Location':'','JPG':[],'Titles':[]}
         # 
@@ -45,11 +40,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.loaded_files = {}
 
     def update_loaded_files(self,name,location,size,JPG=[],Titles=[]):
+        #Skip loading files that already exist
         if name in self.loaded_files:
             pass
         else:
             self.loaded_files.update({name:{'Location':location,'Size':size,'JPG':JPG.copy(),'Titles':Titles.copy()}})
-
         
     @pyqtSlot()
     def open_dialog(self):
@@ -62,7 +57,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.loaded_files = {}
         for loc in fname[0]:
             name = loc.split(os.sep)[-1]
-            print("name: ",name)
             if '(' not in loc and ')' not in loc:
                 self.DisplayError('PDF load error',f'Error: {loc} missing (size) in title')
                 return
@@ -73,8 +67,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 size = '16x20_8x10_4x5'
             self.update_loaded_files(name,loc,size)
         self.update_loaded_files_view()
-        print(self.loaded_files)
-
 
     def update_loaded_files_view(self):
         for name in self.loaded_files:
@@ -90,14 +82,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if len(self.loaded_files.keys()) == 0:
             self.DisplayError('Convert Error','No PDFs loaded')
             return
-        pages = 0
         for name in self.loaded_files:
             if len(self.loaded_files[name]['JPG']) == 0:
                 loc = self.loaded_files[name]['Location']
                 for page in pymupdf.open(loc):
                     self.loaded_files[name]['JPG'].append(page.get_pixmap(dpi=300))
                 pages = len(self.loaded_files[name]['JPG'])
-                print("Pages:",pages)
                 for _ in range(pages):
                     self.loaded_files[name]['Titles'].append('')
 
@@ -142,9 +132,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             #Make sure its in bounds
             if new_indx < 0:
                 new_indx = num_images - 1
-            print("new_indx",new_indx)
             new_indx = new_indx % num_images
-            print("new_indx % num_images",new_indx)
 
         tmp = self.loaded_files[first_key]['JPG'][new_indx]
         self.loaded_files['cur_img'] = new_indx
@@ -169,14 +157,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.DisplayError('Title Error','Error: No files converted')
             return
         cur_img = self.loaded_files['cur_img']
-        print(img_changed)
 
         if img_changed:
             self.ImageTitle.setText(self.loaded_files[first_key]['Titles'][cur_img])
         else:
             self.loaded_files[first_key]['Titles'][cur_img] = self.ImageTitle.text()
         title = self.ImageTitle.text()
-        print(title)
 
     def save(self):
         for name in self.loaded_files:
@@ -196,13 +182,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if title == '':
                 self.DisplayError('Save Error',f'Error: Image {indx+1} is missing a title')
                 return
+
         Titles = self.loaded_files[first_key]['Titles'].copy()
         for name in self.loaded_files:
             if 'cur_img' not in name:
                 for indx in range(len(self.loaded_files[name]['Titles'])):
                     self.loaded_files[name]['Titles'][indx] = Titles[indx]+'_'+self.loaded_files[name]['Size']
-                    print(self.loaded_files[name]['Titles'])
-
         save_path = QFileDialog.getExistingDirectory(
                 parent=self,
                 caption='Select directory',
@@ -226,18 +211,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clear_loaded_files()
         self.update_image()
 
-
-                
-
     def DisplayError(self,title,message):
         dlg = QMessageBox(self)
         dlg.setWindowTitle(title)
         dlg.setText(message)
         button = dlg.exec()
-
-
-        
-
 
 app = QApplication(argv)
 
